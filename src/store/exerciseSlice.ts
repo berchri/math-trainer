@@ -3,18 +3,37 @@ import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
 export interface Calculation {
   expression: string
   result: number
+  solved: boolean
+}
+
+export interface ExerciseProp {
+  label: string
+  description: string
+  value: number
+  min: number
+  max: number
+}
+
+export interface Exercise {
+  id: string
+  label: string
+  description: string
+  props?: Record<string, ExerciseProp>
+  generate: (count: number, nr?: number) => Calculation[]
 }
 
 interface ExerciseState {
   id: string | null
   calculations: Calculation[]
   currentIndex: number
+  checked: boolean
 }
 
 const initialState: ExerciseState = {
   id: null,
   calculations: [],
   currentIndex: 0,
+  checked: false,
 }
 
 function randomInt(min: number, max: number) {
@@ -30,7 +49,24 @@ function shuffle<T>(arr: T[]): T[] {
   return a
 }
 
+// (a>1) + (b>1) = (c<=20)
 function generateA(count: number): Calculation[] {
+    const seen = new Set<string>()
+    const result: Calculation[] = []
+    while (result.length < count) {
+        const a = randomInt(2, 17)
+        const b = randomInt(2, 20 - a)
+        const key = `${a}+${b}`
+        if (!seen.has(key)) {
+            seen.add(key)
+            result.push({ expression: `${a} + ${b}`, result: a + b, solved: false })
+        }
+    }
+    return result
+}
+
+// (a<10)+b=(c<=20)
+function generateB(count: number): Calculation[] {
   const seen = new Set<string>()
   const result: Calculation[] = []
   while (result.length < count) {
@@ -39,13 +75,14 @@ function generateA(count: number): Calculation[] {
     const key = `${a}+${b}`
     if (!seen.has(key)) {
       seen.add(key)
-      result.push({ expression: `${a} + ${b}`, result: a + b })
+      result.push({ expression: `${a} + ${b}`, result: a + b, solved: false })
     }
   }
   return result
 }
 
-function generateB(count: number): Calculation[] {
+// (a>10) + b = (c<=20)
+function generateC(count: number): Calculation[] {
   const seen = new Set<string>()
   const result: Calculation[] = []
   while (result.length < count) {
@@ -54,42 +91,33 @@ function generateB(count: number): Calculation[] {
     const key = `${a}+${b}`
     if (!seen.has(key)) {
       seen.add(key)
-      result.push({ expression: `${a} + ${b}`, result: a + b })
+      result.push({ expression: `${a} + ${b}`, result: a + b, solved: false })
     }
   }
   return result
 }
 
-function generateC(count: number): Calculation[] {
-  const fixedNumber = 5
+// (1<a<10) + (b=x) = c
+function generateD(count: number, nr?: number): Calculation[] {
+  const fixedNumber = nr ?? 5
   const all: Calculation[] = []
   for (let a = 2; a <= 9; a++) {
-    all.push({ expression: `${a} + ${fixedNumber}`, result: a + fixedNumber })
+    all.push({ expression: `${a} + ${fixedNumber}`, result: a + fixedNumber, solved: false })
   }
   return shuffle(all).slice(0, count)
 }
 
-function generateD(count: number): Calculation[] {
-  const seen = new Set<string>()
-  const result: Calculation[] = []
-  while (result.length < count) {
-    const a = randomInt(2, 17)
-    const b = randomInt(2, 20 - a)
-    const key = `${a}+${b}`
-    if (!seen.has(key)) {
-      seen.add(key)
-      result.push({ expression: `${a} + ${b}`, result: a + b })
-    }
-  }
-  return result
-}
 
-const generators: Record<string, (count: number) => Calculation[]> = {
-  a: generateA,
-  b: generateB,
-  c: generateC,
-  d: generateD,
-}
+export const exercises: Exercise[] = [
+  { id: 'a', label: '(a > 1) + (b > 1) = (c ≤ 20)', description: 'Summanden sind größer als 1. Summe ist kleiner gleich 20.', generate: generateA },
+  { id: 'b', label: '(a < 10) + b = (c ≤ 20)', description: 'Erster Summand ist kleiner als 10. Summe ist kleiner gleich 20.', generate: generateB },
+  { id: 'c', label: '(a > 10) + b = (c ≤ 20)', description: 'Erster Summand ist größer als 10. Summe ist kleiner gleich 20.', generate: generateC },
+  {
+    id: 'd', label: '(1 < a < 10) + (b = x) = ?', description: 'Erster Summand ist eine Ziffer von 2 bis 9. Zweiter Summand ist fest wählbar.',
+    props: { nr: { label: 'Festgelegte Zahl', description: 'Wählen Sie eine feste Zahl für den zweiten Summanden.', value: 5, min: 1, max: 10 } },
+    generate: generateD,
+  },
+]
 
 const exerciseSlice = createSlice({
   name: 'exercise',
@@ -98,21 +126,40 @@ const exerciseSlice = createSlice({
     startExercise(state, action: PayloadAction<{ id: string; count: number }>) {
       const { id, count } = action.payload
       state.id = id
-      state.calculations = generators[id]?.(count) ?? []
+      state.calculations = exercises.find((e) => e.id === id)?.generate(count) ?? []
       state.currentIndex = 0
+      state.checked = false
     },
     nextCalculation(state) {
       if (state.currentIndex < state.calculations.length - 1) {
         state.currentIndex += 1
+        state.checked = false
       }
+    },
+    previousCalculation(state) {
+      if (state.currentIndex > 0) {
+        state.currentIndex -= 1
+        state.checked = false
+      }
+    },
+    checkAnswer(state, action: PayloadAction<string>) {
+      state.checked = true
+      const current = state.calculations[state.currentIndex]
+      if (current && Number(action.payload) === current.result) {
+        current.solved = true
+      }
+    },
+    uncheckAnswer(state) {
+      state.checked = false
     },
     resetExercise(state) {
       state.id = null
       state.calculations = []
       state.currentIndex = 0
+      state.checked = false
     },
   },
 })
 
-export const { startExercise, nextCalculation, resetExercise } = exerciseSlice.actions
+export const { startExercise, nextCalculation, previousCalculation, checkAnswer, uncheckAnswer, resetExercise } = exerciseSlice.actions
 export default exerciseSlice.reducer

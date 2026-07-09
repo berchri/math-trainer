@@ -1,27 +1,24 @@
-import { useState } from 'react'
-import { Box, Button, Field, HStack, Heading, Input, Text, VStack } from '@chakra-ui/react'
-import { useAppDispatch, useAppSelector } from '../store/hooks'
-import { nextCalculation } from '../store/exerciseSlice'
-import { clearAnswer } from '../store/answerSlice'
+import { Box, Field, Heading, Input, Text, VStack } from '@chakra-ui/react'
+import { useAppSelector } from '../store/hooks'
 
 export default function Main() {
-    const dispatch = useAppDispatch()
-    const { calculations, currentIndex } = useAppSelector((state) => state.exercise)
+    const { calculations, currentIndex, checked } = useAppSelector((state) => state.exercise)
     const answer = useAppSelector((state) => state.answer.value)
-    const [checked, setChecked] = useState(false)
 
     const current = calculations[currentIndex]
-    const isLast = currentIndex === calculations.length - 1
 
     const hasAnswer = answer !== ''
     const isCorrect = checked && hasAnswer && Number(answer) === current?.result
     const isWrong = checked && hasAnswer && !isCorrect
 
-    function handleNext() {
-        dispatch(nextCalculation())
-        dispatch(clearAnswer())
-        setChecked(false)
+    const correctEmojis = ['🎉', '👍', '🥳', '👏', '😎', '🏆', '🥇', '😜', '😍', '🤩']
+    const wrongEmojis = ['☹️', '😣', '😫', '🙄','😮','😒','😭','😵‍💫','😱']
+
+    function pick(arr: string[]) {
+        return arr[Math.floor(Math.random() * arr.length)]
     }
+
+    const emoji = isCorrect ? pick(correctEmojis) : isWrong ? pick(wrongEmojis) : '🧐'
 
     return (
         <VStack gap={6} p={8}>
@@ -29,11 +26,11 @@ export default function Main() {
             {current && (
                 <Box bg="white" p={8} rounded="xl" shadow="md" textAlign="center" w="full" maxW="400px">
                     <Text fontSize="4xl" fontWeight="bold" fontFamily="mono" mb={6}>
-                        {current.expression} = ?
+                        {current.expression} =
                     </Text>
                     <Field.Root>
                         <Input
-                            placeholder="your answer"
+                            placeholder="?"
                             value={answer}
                             onChange={() => {}}
                             readOnly
@@ -48,34 +45,17 @@ export default function Main() {
                             color={isCorrect ? 'green.500' : isWrong ? 'red.500' : 'gray.400'}
                             minH="1.25em"
                         >
-                            {isCorrect ? '✓ Correct' : isWrong ? `✗ Wrong (answer: ${current.result})` : ''}
+                            {isCorrect ? `✓ Richtig` : isWrong ? `✗ Falsch (Antwort: ${current.result})` : ''}
                         </Text>
                     </Field.Root>
+                    <Text fontSize="5xl" mt={4} minH="1.5em">
+                        {emoji}
+                    </Text>
                     <Text mt={2} fontSize="sm" color="gray.400">
                         {currentIndex + 1} / {calculations.length}
                     </Text>
                 </Box>
             )}
-            <HStack w="full" maxW="400px" gap={3}>
-                <Button
-                    flex={1}
-                    colorScheme="teal"
-                    size="lg"
-                    disabled={!hasAnswer || checked}
-                    onClick={() => setChecked(true)}
-                >
-                    Prüfen
-                </Button>
-                <Button
-                    flex={1}
-                    colorScheme="blue"
-                    size="lg"
-                    disabled={isLast}
-                    onClick={handleNext}
-                >
-                    {isLast ? 'Done' : 'Next'}
-                </Button>
-            </HStack>
         </VStack>
     )
 }

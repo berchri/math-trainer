@@ -1,14 +1,7 @@
 import { useState } from 'react'
-import { Box, Button, Heading, Text, VStack, HStack, SimpleGrid } from '@chakra-ui/react'
-
-const exercises = [
-  { id: 'a', label: '(a < 10) + (b?) = (c ≤ 20)', description: 'Small numbers, find the missing addend' },
-  { id: 'b', label: '(a > 10) + (b?) = (c ≤ 20)', description: 'Larger first number, find the missing addend' },
-  { id: 'c', label: '(1 < a < 10) + (b = x) = ?', description: 'Fixed second number, find the sum' },
-  { id: 'd', label: '(a > 1) + (b > 1) = (c ≤ 20)', description: 'Both numbers greater than 1' },
-]
-
-const countOptions = [5, 10, 20, 50]
+import { Box, Heading, Text, VStack } from '@chakra-ui/react'
+import CalcOptions from './CalcOptions'
+import { exercises } from '../store/exerciseSlice'
 
 interface ExerciseMenuProps {
   onSelect: (id: string, count: number) => void
@@ -66,30 +59,13 @@ export default function ExerciseMenu({ onSelect }: ExerciseMenuProps) {
             <Text color="gray.500" fontSize="sm" mt={1}>{selected.description}</Text>
           </Box>
 
-          <VStack gap={3} w="full">
-            <Text fontWeight="semibold" color="gray.600">Number of calculations</Text>
-            <SimpleGrid columns={4} gap={3} w="full">
-              {countOptions.map((n) => (
-                <Button
-                  key={n}
-                  variant={count === n ? 'solid' : 'outline'}
-                  colorScheme="blue"
-                  onClick={() => setCount(n)}
-                >
-                  {n}
-                </Button>
-              ))}
-            </SimpleGrid>
-          </VStack>
-
-          <HStack gap={3} w="full">
-            <Button flex={1} variant="outline" onClick={() => setSelectedId(null)}>
-              Back
-            </Button>
-            <Button flex={2} colorScheme="blue" onClick={() => onSelect(selected.id, count)}>
-              Start
-            </Button>
-          </HStack>
+          <CalcOptions
+            count={count}
+            setCount={setCount}
+            selected={selected}
+            setSelectedId={setSelectedId}
+            onSelect={onSelect}
+          />
         </VStack>
       )}
     </VStack>
