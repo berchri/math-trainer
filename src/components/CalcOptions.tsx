@@ -1,4 +1,5 @@
-import { Button, HStack, SimpleGrid, Text, VStack } from "@chakra-ui/react";
+import { useState } from 'react';
+import { Button, HStack, SimpleGrid, Text, VStack, NumberInput } from "@chakra-ui/react";
 import type { Exercise } from '../store/exerciseSlice';
 const countOptions = [5, 10, 15, 20]
 
@@ -7,13 +8,29 @@ interface CalcOptionsProps {
     setCount: (count: number) => void
     selected: Exercise
     setSelectedId: (id: string | null) => void
-    onSelect: (id: string, count: number) => void
+    onSelect: (id: string, count: number, options?: Record<string, number>) => void
 }
 
 export default function CalcOptions({ count, setCount, selected, setSelectedId, onSelect }: CalcOptionsProps) {
+    const [nrValue, setNrValue] = useState<number>(selected.props?.nr?.value ?? 0)
+
     return (
         <>
             <VStack gap={3} w="full">
+                <Text fontWeight="semibold" color="gray.600">Wert für X wählen</Text>
+                {selected.props?.nr && (
+                    <NumberInput.Root
+                        w="100%"
+                        maxW="100px"
+                        value={nrValue.toString()}
+                        min={selected.props.nr.min}
+                        max={selected.props.nr.max}
+                        onValueChange={(details) => setNrValue(details.valueAsNumber)}
+                    >
+                        <NumberInput.Control />
+                        <NumberInput.Input />
+                    </NumberInput.Root>
+                )}
                 <Text fontWeight="semibold" color="gray.600">Anzahl der Berechnungen</Text>
                 <SimpleGrid columns={4} gap={3} w="full">
                     {countOptions.map((n) => (
@@ -33,7 +50,7 @@ export default function CalcOptions({ count, setCount, selected, setSelectedId, 
                 <Button flex={1} variant="outline" onClick={() => setSelectedId(null)}>
                     Zurück
                 </Button>
-                <Button flex={2} colorScheme="blue" onClick={() => onSelect(selected.id, count)}>
+                <Button flex={2} colorScheme="blue" onClick={() => onSelect(selected.id, count, selected.props?.nr ? { nr: nrValue } : undefined)}>
                     Start
                 </Button>
             </HStack>

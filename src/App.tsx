@@ -14,9 +14,9 @@ function App() {
   const [exerciseId, setExerciseId] = useState<string | null>(null)
 
   if (!exerciseId) {
-    return <ExerciseMenu onSelect={(id, count) => {
+    return <ExerciseMenu onSelect={(id, count, options) => {
       setExerciseId(id)
-      dispatch(startExercise({ id, count }))
+      dispatch(startExercise({ id, count, options: options as Record<string, number> | undefined }))
     }} />
   }
 

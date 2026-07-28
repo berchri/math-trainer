@@ -1,4 +1,4 @@
-import { Box, Field, Heading, Input, Text, VStack } from '@chakra-ui/react'
+import { Box, Field, Input, Text, VStack } from '@chakra-ui/react'
 import { useAppSelector } from '../store/hooks'
 
 export default function Main() {
@@ -22,7 +22,6 @@ export default function Main() {
 
     return (
         <VStack gap={6} p={8}>
-            <Heading size="2xl">Math Trainer</Heading>
             {current && (
                 <Box bg="white" p={8} rounded="xl" shadow="md" textAlign="center" w="full" maxW="400px">
                     <Text fontSize="4xl" fontWeight="bold" fontFamily="mono" mb={6}>
