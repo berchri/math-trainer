@@ -141,20 +141,20 @@ function generateE(count: number): Calculation[] {
 }
 
 // (a<10) - b = (c>=0)
-function generateF(count: number): Calculation[] {
-  const seen = new Set<string>()
-  const result: Calculation[] = []
-  while (result.length < count) {
-    const a = randomInt(2, 9)
-    const b = randomInt(1, a)
-    const key = `${a}-${b}`
-    if (!seen.has(key)) {
-      seen.add(key)
-      result.push({ expression: `${a} - ${b}`, result: a - b, solved: false })
-    }
-  }
-  return result
-}
+// function generateF(count: number): Calculation[] {
+//   const seen = new Set<string>()
+//   const result: Calculation[] = []
+//   while (result.length < count) {
+//     const a = randomInt(2, 9)
+//     const b = randomInt(1, a)
+//     const key = `${a}-${b}`
+//     if (!seen.has(key)) {
+//       seen.add(key)
+//       result.push({ expression: `${a} - ${b}`, result: a - b, solved: false })
+//     }
+//   }
+//   return result
+// }
 
 // (a>10) - b = (c>=0)
 function generateG(count: number): Calculation[] {
@@ -189,16 +189,16 @@ function generateGG(count: number): Calculation[] {
 }
 
 // (1<a<10) - (b=x) = c
-function generateH(count: number, nr?: number): Calculation[] {
-  const fixedNumber = nr ?? 5
-  const all: Calculation[] = []
-  for (let a = 2; a <= 9; a++) {
-    if (a >= fixedNumber) {
-      all.push({ expression: `${a} - ${fixedNumber}`, result: a - fixedNumber, solved: false })
-    }
-  }
-  return shuffle(all).slice(0, count)
-}
+// function generateH(count: number, nr?: number): Calculation[] {
+//   const fixedNumber = nr ?? 5
+//   const all: Calculation[] = []
+//   for (let a = 2; a <= 9; a++) {
+//     if (a >= fixedNumber) {
+//       all.push({ expression: `${a} - ${fixedNumber}`, result: a - fixedNumber, solved: false })
+//     }
+//   }
+//   return shuffle(all).slice(0, count)
+// }
 
 
 export const exercises: Exercise[] = [
