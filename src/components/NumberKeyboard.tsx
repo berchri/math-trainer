@@ -36,8 +36,8 @@ export default function NumberKeyboard({ onKeyPress, disabledKeys = {} }: {
         p={2}
       >
         {keys.map(({ label, colSpan }) => (
-          <GridItem key={label} colSpan={colSpan} h="full">
-            <Button w="full" h="full" size="lg" variant="outline" disabled={!!disabledKeys[label]} onClick={() => onKeyPress(label)}>
+          <GridItem key={label} colSpan={colSpan} display="flex">
+            <Button w="full" flex="1" size="lg" variant="outline" disabled={!!disabledKeys[label]} onClick={() => onKeyPress(label)}>
               {iconMap[label] ?? label}
             </Button>
           </GridItem>
